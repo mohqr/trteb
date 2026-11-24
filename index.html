@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>صور تذكرك بهبوط الاهلي</title>
+  <!-- Tailwind CSS for responsive layout and spacing -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Arabic display and UI typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Cairo:wght@600;700;800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            calligraphy: ['"Aref Ruqaa"', 'Cairo', 'serif'],
+            cairo: ['Cairo', 'sans-serif'],
+            tajawal: ['Tajawal', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Warm vintage parchment outer backdrop */
+    html, body {
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+      background-color: #d8ceb4;
+      color: #1e1915;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(255, 252, 243, 0.55) 0%, transparent 45%),
+        radial-gradient(circle at 85% 90%, rgba(118, 98, 62, 0.2) 0%, transparent 50%);
+    }
+
+    /* Lock pull-to-refresh, rubber-banding, and browser pan/scroll during an active tile drag */
+    html.is-tile-dragging,
+    body.is-tile-dragging {
+      overscroll-behavior: none !important;
+      touch-action: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+
+    /* Warm cream card surface with subtle vintage paper grain */
+    .vintage-card {
+      background-color: #efe8d5;
+      background-image:
+        repeating-linear-gradient(
+          -18deg,
+          rgba(148, 128, 88, 0.028) 0px,
+          rgba(148, 128, 88, 0.028) 2px,
+          transparent 2px,
+          transparent 14px
+        ),
+        radial-gradient(circle at 50% 0%, rgba(255, 253, 248, 0.72), transparent 72%);
+    }
+
+    /* Classic dark double rule under the calligraphical title */
+    .title-underline {
+      border-top: 2px solid #1e1915;
+      border-bottom: 1.5px solid #1e1915;
+      height: 5px;
+      width: 100%;
+    }
+
+    /* Generous square grid cells inside each framed tier row */
+    .tier-slot {
+      background-color: #e6dec8;
+      border: 1px solid #b8ab8e;
+      aspect-ratio: 1 / 1;
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background-color 0.14s ease, border-color 0.14s ease;
+    }
+
+    @media (min-width: 640px) {
+      .tier-slot {
+        min-height: 76px;
+      }
+    }
+
+    /* Drag-over visual cues */
+    .tier-row.drag-over {
+      background-color: rgba(138, 106, 26, 0.18);
+      outline: 2px dashed #6b5314;
+      outline-offset: -2px;
+    }
+
+    .pool-container.drag-over {
+      background-color: rgba(138, 106, 26, 0.2);
+      outline: 2px dashed #6b5314;
+    }
+
+    /* Clear square evaluation tiles with touch-action: none so grabbing never pans the page */
+    .eval-tile {
+      border-radius: 7px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 3px 8px rgba(30, 25, 21, 0.2);
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      background-color: #dfd2b2;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    .eval-tile:active,
+    .eval-tile.dragging-active {
+      cursor: grabbing;
+      touch-action: none;
+      transform: scale(1.03);
+    }
+
+    .eval-tile.selected-tile {
+      box-shadow: 0 0 0 3px #1D9BF0, 0 8px 18px rgba(0, 0, 0, 0.26);
+      transform: scale(1.03);
+    }
+
+    /* Floating touch/pointer drag preview badge */
+    #touch-drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      touch-action: none;
+      z-index: 9999;
+      border-radius: 7px;
+      border: 2px solid #ffffff;
+      overflow: hidden;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.34);
+      transform: translate(-50%, -50%) scale(1.06);
+      display: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen py-4 sm:py-7 px-3 sm:px-5 flex flex-col items-center gap-4 sm:gap-5">
+
+  <!-- Floating touch/pointer drag preview -->
+  <div id="touch-drag-ghost" class="w-20 h-20 sm:w-24 sm:h-24"></div>
+
+  <!-- Main Vertical Vintage Board Container -->
+  <main id="capture-board" class="vintage-card w-full max-w-[540px] rounded-[22px] border-[1.5px] border-[#b8ab8e] shadow-[0_14px_34px_rgba(45,35,18,0.18)] p-4 sm:p-6">
+
+    <!-- Header Title + Classic Double Rule -->
+    <header class="mb-4 sm:mb-5 text-center">
+      <h1 class="font-calligraphy text-2xl sm:text-[2.15rem] font-bold text-[#1e1915] leading-snug mb-2.5">
+        صور تذكرك بهبوط الاهلي
+      </h1>
+      <div class="title-underline"></div>
+    </header>
+
+    <!-- Four Tier Rows in Exact Order:
+         1. يلو
+         2. يذكرني
+         3. نص ونص
+         4. مايذكرني
+         RTL layout puts colored category label on the right and square grid slots on the left -->
+    <section
+      id="tiers-board"
+      aria-label="صفوف التصنيف"
+      class="border-[1.5px] border-[#b8ab8e] rounded-lg overflow-hidden bg-[#e6dec8]"
+    ></section>
+
+    <!-- Signature Footer Bar -->
+    <footer class="mt-4 sm:mt-5 pt-2.5 flex items-center justify-between gap-3">
+      <!-- Opposite corner X mark + handle -->
+      <div class="flex items-center gap-1.5 text-[#1e1915] font-extrabold text-sm sm:text-base" dir="ltr">
+        <span class="text-base sm:text-lg font-black leading-none select-none" aria-hidden="true">𝕏</span>
+        <span>Mohqarni12</span>
+      </div>
+
+      <!-- Profile avatar + verified badge + mohammed + @Mohqarni12 -->
+      <div class="flex items-center gap-2.5">
+        <div class="text-right leading-tight">
+          <div class="flex items-center justify-end gap-1 font-extrabold text-sm sm:text-base text-[#1e1915]">
+            <svg class="w-4 h-4 text-[#1D9BF0] shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"/>
+            </svg>
+            <span dir="ltr">mohammed</span>
+          </div>
+          <div class="text-xs font-bold text-[#685b46]" dir="ltr">@Mohqarni12</div>
+        </div>
+
+        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border-[1.5px] border-[#b8ab8e] shadow-sm bg-[#1f1a14] shrink-0">
+          <img
+            src="https://i.postimg.cc/K8PfmKvm/IMG-4840.jpg"
+            alt="mohammed"
+            referrerpolicy="no-referrer"
+            class="w-full h-full object-cover"
+            onerror="this.onerror=null; this.src='https://placehold.co/96x96/262018/F2EBDA?text=M';"
+          />
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Separate Bottom Vintage Tray Containing All 13 Original Relegation Images -->
+  <section
+    aria-label="معرض الصور"
+    class="vintage-card w-full max-w-[540px] rounded-[22px] border-[1.5px] border-[#b8ab8e] shadow-[0_12px_28px_rgba(45,35,18,0.15)] p-4 sm:p-5"
+  >
+    <div id="selected-hint" class="hidden mb-3 text-center text-xs font-bold text-[#6b5314] bg-[#e6dec8] py-1.5 px-3 rounded-lg border border-[#b8ab8e]">
+      تم اختيار الصورة — اضغط على أي صف لوضعها أو اضغط على صورة داخل الصف لإعادتها
+    </div>
+
+    <div
+      id="image-pool"
+      class="pool-container rounded-xl p-1 grid grid-cols-4 sm:grid-cols-5 gap-2.5 sm:gap-3 items-center justify-items-center"
+    ></div>
+  </section>
+
+  <script>
+    // Four tiers in exact top-to-bottom order
+    const TIERS_CONFIG = [
+      {
+        id: 'yellow',
+        label: 'يلو',
+        bgColor: '#6f242d',
+        textColor: '#FFF9EC'
+      },
+      {
+        id: 'reminds',
+        label: 'يذكرني',
+        bgColor: '#7e4728',
+        textColor: '#FFF9EC'
+      },
+      {
+        id: 'fifty-fifty',
+        label: 'نص ونص',
+        bgColor: '#7b5e15',
+        textColor: '#FFF9EC'
+      },
+      {
+        id: 'does-not-remind',
+        label: 'مايذكرني',
+        bgColor: '#40484e',
+        textColor: '#F7FBF6'
+      }
+    ];
+
+    // Exact 13 original الأهلي relegation images
+    const EVALUATION_IMAGES = [
+      { id: 'img-1',  src: 'https://i.postimg.cc/t43y3zDT/IMG-5977.jpg' },
+      { id: 'img-2',  src: 'https://i.postimg.cc/mgYRYSVr/IMG-5980.jpg' },
+      { id: 'img-3',  src: 'https://i.postimg.cc/4x6Z61w7/IMG-5979.jpg' },
+      { id: 'img-4',  src: 'https://i.postimg.cc/HkwHwt30/IMG-5983.jpg' },
+      { id: 'img-5',  src: 'https://i.postimg.cc/pLfxfBkp/IMG-5982.jpg' },
+      { id: 'img-6',  src: 'https://i.postimg.cc/13GPGKMD/IMG-5985.jpg' },
+      { id: 'img-7',  src: 'https://i.postimg.cc/pLfxfBkF/IMG-5984.jpg' },
+      { id: 'img-8',  src: 'https://i.postimg.cc/yN7KvSrg/IMG-5987.jpg' },
+      { id: 'img-9',  src: 'https://i.postimg.cc/Dz7hBbYs/IMG-5986.jpg' },
+      { id: 'img-10', src: 'https://i.postimg.cc/TPTxCWHQ/IMG-5989.jpg' },
+      { id: 'img-11', src: 'https://i.postimg.cc/N0QtprP1/IMG-5988.jpg' },
+      { id: 'img-12', src: 'https://i.postimg.cc/g0GpN6By/IMG-5991.jpg' },
+      { id: 'img-13', src: 'https://i.postimg.cc/N0QtprPk/IMG-5990.jpg' }
+    ];
+
+    // Square grid columns per tier row matching the vintage grid structure
+    const GRID_COLS_PER_ROW = 5;
+
+    // Gentle viewport edge auto-scroll settings (only active near top/bottom viewport edges)
+    const EDGE_SCROLL_ZONE = 92;
+    const EDGE_SCROLL_MAX_STEP = 7;
+    const TAP_MOVE_THRESHOLD = 8;
+
+    const state = {
+      items: EVALUATION_IMAGES,
+      placements: {
+        pool: EVALUATION_IMAGES.map(item => item.id),
+        yellow: [],
+        reminds: [],
+        'fifty-fifty': [],
+        'does-not-remind': []
+      },
+      selectedItemId: null,
+      draggedItemId: null,
+      activePointerId: null,
+      activeDragSource: null, // 'html5' | 'pointer' | 'touch'
+      suppressNextClick: false,
+      isAutoScrolling: false,
+      pointerY: null,
+      scrollRafId: null
+    };
+
+    /**
+     * Immediately locks native browser scroll, pan, rubber-banding, and pull-to-refresh
+     * the moment a tile is grabbed.
+     */
+    function lockBrowserScrollDuringDrag(clientY, sourceType) {
+      state.isAutoScrolling = true;
+      state.activeDragSource = sourceType;
+      if (typeof clientY === 'number' && !Number.isNaN(clientY)) {
+        state.pointerY = clientY;
+      }
+      document.documentElement.classList.add('is-tile-dragging');
+      document.body.classList.add('is-tile-dragging');
+
+      if (!state.scrollRafId) {
+        state.scrollRafId = window.requestAnimationFrame(autoScrollLoop);
+      }
+    }
+
+    /**
+     * Releases drag locks and hides floating drag ghost cleanly.
+     */
+    function unlockBrowserScrollAfterDrag() {
+      state.isAutoScrolling = false;
+      state.activeDragSource = null;
+      state.activePointerId = null;
+      state.pointerY = null;
+
+      document.documentElement.classList.remove('is-tile-dragging');
+      document.body.classList.remove('is-tile-dragging');
+      document.querySelectorAll('.dragging-active, .drag-over').forEach((el) => {
+        el.classList.remove('dragging-active', 'drag-over', 'opacity-45');
+      });
+
+      const ghost = document.getElementById('touch-drag-ghost');
+      if (ghost) {
+        ghost.style.display = 'none';
+        ghost.innerHTML = '';
+      }
+
+      if (state.scrollRafId) {
+        window.cancelAnimationFrame(state.scrollRafId);
+        state.scrollRafId = null;
+      }
+    }
+
+    /**
+     * Computes gentle vertical auto-scroll step ONLY when pointer approaches top or bottom viewport edge.
+     * Returns 0 everywhere in the middle of the viewport so the page never drags or jumps with the finger.
+     */
+    function getEdgeScrollDelta(clientY) {
+      if (typeof clientY !== 'number' || Number.isNaN(clientY)) return 0;
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      if (vh <= 0) return 0;
+
+      if (clientY < EDGE_SCROLL_ZONE) {
+        const ratio = Math.min(1, Math.max(0, (EDGE_SCROLL_ZONE - clientY) / EDGE_SCROLL_ZONE));
+        return -Math.max(1.0, ratio * ratio * EDGE_SCROLL_MAX_STEP);
+      }
+
+      const distBottom = vh - clientY;
+      if (distBottom < EDGE_SCROLL_ZONE) {
+        const ratio = Math.min(1, Math.max(0, (EDGE_SCROLL_ZONE - distBottom) / EDGE_SCROLL_ZONE));
+        return Math.max(1.0, ratio * ratio * EDGE_SCROLL_MAX_STEP);
+      }
+
+      return 0;
+    }
+
+    function autoScrollLoop() {
+      if (!state.isAutoScrolling) {
+        state.scrollRafId = null;
+        return;
+      }
+
+      const delta = getEdgeScrollDelta(state.pointerY);
+      if (delta !== 0) {
+        try {
+          window.scrollBy({ top: delta, left: 0, behavior: 'auto' });
+        } catch (_err) {
+          window.scrollBy(0, delta);
+        }
+      }
+
+      state.scrollRafId = window.requestAnimationFrame(autoScrollLoop);
+    }
+
+    function updatePointerPosition(clientY) {
+      if (!state.isAutoScrolling) return;
+      if (typeof clientY === 'number' && !Number.isNaN(clientY)) {
+        state.pointerY = clientY;
+      }
+    }
+
+    function updateGhostPreview(item, clientX, clientY) {
+      const ghost = document.getElementById('touch-drag-ghost');
+      if (!ghost || !item) return;
+      if (!ghost.dataset.forItem || ghost.dataset.forItem !== item.id) {
+        ghost.dataset.forItem = item.id;
+        ghost.innerHTML = `<img src="${item.src}" referrerpolicy="no-referrer" class="w-full h-full object-cover" alt="" />`;
+      }
+      ghost.style.display = 'block';
+      ghost.style.left = `${clientX}px`;
+      ghost.style.top = `${clientY}px`;
+    }
+
+    function highlightDropTargetAt(clientX, clientY) {
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      const hitEl = document.elementFromPoint(clientX, clientY);
+      const dropZone = hitEl ? hitEl.closest('[data-target-zone], #image-pool') : null;
+      if (dropZone) {
+        dropZone.classList.add('drag-over');
+      }
+      return hitEl;
+    }
+
+    function commitDropAtPoint(draggedId, clientX, clientY) {
+      if (!draggedId) return;
+      const hitEl = document.elementFromPoint(clientX, clientY);
+      const hitTile = hitEl ? hitEl.closest('.eval-tile') : null;
+      const hitRow = hitEl ? hitEl.closest('[data-target-zone]') : null;
+      const hitPool = hitEl ? hitEl.closest('#image-pool') : null;
+
+      if (hitTile && hitTile.dataset.itemId && hitTile.dataset.itemId !== draggedId) {
+        moveBeforeTarget(draggedId, hitTile.dataset.itemId, hitTile.dataset.zone || 'pool');
+      } else if (hitRow) {
+        moveItemToZone(draggedId, hitRow.dataset.targetZone);
+      } else if (hitPool) {
+        moveItemToZone(draggedId, 'pool');
+      }
+    }
+
+    function initApp() {
+      try {
+        bindEvents();
+        renderAll();
+      } catch (err) {
+        console.error('Error initializing tier board:', err);
+      }
+    }
+
+    function renderAll() {
+      renderTiers();
+      renderPool();
+      updateHint();
+    }
+
+    function renderTiers() {
+      const board = document.getElementById('tiers-board');
+      if (!board) return;
+      board.innerHTML = '';
+
+      TIERS_CONFIG.forEach((tier, idx) => {
+        const rowItems = state.placements[tier.id] || [];
+        const totalCells = Math.max(
+          GRID_COLS_PER_ROW,
+          Math.ceil(rowItems.length / GRID_COLS_PER_ROW) * GRID_COLS_PER_ROW
+        );
+
+        const rowEl = document.createElement('div');
+        rowEl.className = 'tier-row flex items-stretch';
+        if (idx < TIERS_CONFIG.length - 1) {
+          rowEl.style.borderBottom = '1px solid #b8ab8e';
+        }
+        rowEl.dataset.targetZone = tier.id;
+
+        // Right-side colored category label in RTL
+        const labelBtn = document.createElement('button');
+        labelBtn.type = 'button';
+        labelBtn.className = 'w-24 sm:w-28 shrink-0 flex items-center justify-center px-2 py-3 text-base sm:text-lg font-black transition hover:brightness-105 cursor-pointer';
+        labelBtn.style.backgroundColor = tier.bgColor;
+        labelBtn.style.color = tier.textColor;
+        labelBtn.style.borderLeft = '1px solid #b8ab8e';
+        labelBtn.textContent = tier.label;
+        labelBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleZoneTap(tier.id);
+        });
+
+        // Left-side square grid cells in RTL
+        const gridWrap = document.createElement('div');
+        gridWrap.className = 'flex-1 grid grid-cols-5 bg-[#e6dec8]';
+        gridWrap.addEventListener('click', () => handleZoneTap(tier.id));
+
+        rowEl.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          rowEl.classList.add('drag-over');
+          updatePointerPosition(e.clientY);
+        });
+        rowEl.addEventListener('dragleave', (e) => {
+          if (!rowEl.contains(e.relatedTarget)) {
+            rowEl.classList.remove('drag-over');
+          }
+        });
+        rowEl.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const itemId = e.dataTransfer.getData('text/plain') || state.draggedItemId;
+          state.draggedItemId = null;
+          unlockBrowserScrollAfterDrag();
+          if (itemId) {
+            moveItemToZone(itemId, tier.id);
+          }
+        });
+
+        for (let i = 0; i < totalCells; i++) {
+          const slot = document.createElement('div');
+          slot.className = 'tier-slot p-1';
+
+          const itemId = rowItems[i];
+          if (itemId) {
+            const itemObj = state.items.find(x => x.id === itemId);
+            if (itemObj) {
+              slot.appendChild(createTile(itemObj, 'w-full h-full', tier.id));
+            }
+          }
+
+          gridWrap.appendChild(slot);
+        }
+
+        rowEl.appendChild(labelBtn);
+        rowEl.appendChild(gridWrap);
+        board.appendChild(rowEl);
+      });
+    }
+
+    function renderPool() {
+      const poolEl = document.getElementById('image-pool');
+      if (!poolEl) return;
+      poolEl.innerHTML = '';
+
+      const poolIds = state.placements.pool || [];
+      if (poolIds.length === 0) {
+        const msg = document.createElement('div');
+        msg.className = 'col-span-full py-3 text-center text-xs sm:text-sm font-bold text-[#685b46]';
+        msg.textContent = 'جميع الصور مرتبة في الصفوف — اضغط على أي صورة داخل الصف لإعادتها هنا';
+        poolEl.appendChild(msg);
+        return;
+      }
+
+      poolIds.forEach((itemId) => {
+        const itemObj = state.items.find(x => x.id === itemId);
+        if (!itemObj) return;
+        poolEl.appendChild(createTile(itemObj, 'w-20 h-20 sm:w-22 sm:h-22', 'pool'));
+      });
+    }
+
+    function createTile(item, sizeClasses = '', zone = 'pool') {
+      const tile = document.createElement('div');
+      tile.className = `eval-tile relative shrink-0 ${sizeClasses}`;
+      if (state.selectedItemId === item.id) {
+        tile.classList.add('selected-tile');
+      }
+      tile.draggable = true;
+      tile.dataset.itemId = item.id;
+      tile.dataset.zone = zone;
+
+      const img = document.createElement('img');
+      img.src = item.src;
+      img.alt = '';
+      img.referrerPolicy = 'no-referrer';
+      img.draggable = false;
+      img.className = 'w-full h-full object-cover block pointer-events-none select-none';
+      img.onerror = () => {
+        img.onerror = null;
+        img.src = 'https://placehold.co/140x140/E6DEC8/1E1915?text=IMG';
+      };
+
+      tile.appendChild(img);
+
+      // HTML5 drag support (desktop mouse)
+      tile.addEventListener('dragstart', (e) => {
+        if (state.activeDragSource === 'pointer' || state.activeDragSource === 'touch') {
+          e.preventDefault();
+          return;
+        }
+        state.draggedItemId = item.id;
+        state.selectedItemId = null;
+        state.suppressNextClick = true;
+        tile.classList.add('dragging-active', 'opacity-45');
+        e.dataTransfer.setData('text/plain', item.id);
+        e.dataTransfer.effectAllowed = 'move';
+        lockBrowserScrollDuringDrag(e.clientY, 'html5');
+      });
+
+      tile.addEventListener('dragend', () => {
+        state.draggedItemId = null;
+        unlockBrowserScrollAfterDrag();
+        setTimeout(() => {
+          state.suppressNextClick = false;
+        }, 50);
+      });
+
+      tile.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        updatePointerPosition(e.clientY);
+      });
+
+      tile.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const draggedId = e.dataTransfer.getData('text/plain') || state.draggedItemId;
+        state.draggedItemId = null;
+        unlockBrowserScrollAfterDrag();
+        if (draggedId && draggedId !== item.id) {
+          moveBeforeTarget(draggedId, item.id, zone);
+        }
+      });
+
+      // Tap / click: placed tile returns to pool; pool tile toggles selection
+      tile.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (state.suppressNextClick) {
+          state.suppressNextClick = false;
+          return;
+        }
+        if (zone !== 'pool') {
+          moveItemToZone(item.id, 'pool');
+          return;
+        }
+        state.selectedItemId = (state.selectedItemId === item.id) ? null : item.id;
+        renderAll();
+      });
+
+      // Bind unified Pointer + Touch drag handlers so grabbing immediately locks browser scroll
+      bindPointerAndTouchDrag(tile, item);
+
+      return tile;
+    }
+
+    /**
+     * Immediately locks page scroll/pan/rubber-banding on touch/pointer grab and prevents
+     * browser scroll/pull-to-refresh during pointermove/touchmove while dragging.
+     */
+    function bindPointerAndTouchDrag(tile, item) {
+      let startX = 0;
+      let startY = 0;
+      let hasMovedBeyondTap = false;
+      let touchSessionActive = false;
+      let pointerSessionActive = false;
+
+      function startGrab(clientX, clientY, sourceType, pointerId) {
+        startX = clientX;
+        startY = clientY;
+        hasMovedBeyondTap = false;
+        state.draggedItemId = item.id;
+        if (typeof pointerId === 'number') {
+          state.activePointerId = pointerId;
+        }
+        tile.classList.add('dragging-active');
+        lockBrowserScrollDuringDrag(clientY, sourceType);
+      }
+
+      function moveGrab(clientX, clientY, cancelableEvent) {
+        if (!state.draggedItemId) return;
+
+        // Immediately prevent native browser pan/scroll/rubber-banding
+        if (cancelableEvent && cancelableEvent.cancelable) {
+          cancelableEvent.preventDefault();
+        }
+
+        const dx = Math.abs(clientX - startX);
+        const dy = Math.abs(clientY - startY);
+        if (dx > TAP_MOVE_THRESHOLD || dy > TAP_MOVE_THRESHOLD) {
+          hasMovedBeyondTap = true;
+          state.suppressNextClick = true;
+        }
+
+        updatePointerPosition(clientY);
+        updateGhostPreview(item, clientX, clientY);
+        highlightDropTargetAt(clientX, clientY);
+      }
+
+      function finishGrab(clientX, clientY) {
+        const draggedId = state.draggedItemId;
+        const shouldCommit = hasMovedBeyondTap && typeof clientX === 'number' && typeof clientY === 'number';
+
+        state.draggedItemId = null;
+        touchSessionActive = false;
+        pointerSessionActive = false;
+        unlockBrowserScrollAfterDrag();
+
+        if (shouldCommit && draggedId) {
+          commitDropAtPoint(draggedId, clientX, clientY);
+        }
+
+        if (hasMovedBeyondTap) {
+          setTimeout(() => {
+            state.suppressNextClick = false;
+          }, 60);
+        }
+        hasMovedBeyondTap = false;
+      }
+
+      // Pointer Events (modern mobile & desktop browsers)
+      tile.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        // For touch pointers, coordinate with touch handlers so both lock immediately
+        if (e.pointerType === 'touch') {
+          pointerSessionActive = true;
+          startGrab(e.clientX, e.clientY, 'pointer', e.pointerId);
+          return;
+        }
+        if (e.pointerType === 'pen') {
+          pointerSessionActive = true;
+          startGrab(e.clientX, e.clientY, 'pointer', e.pointerId);
+        }
+      });
+
+      tile.addEventListener('pointermove', (e) => {
+        if (!pointerSessionActive || state.activePointerId !== e.pointerId) return;
+        moveGrab(e.clientX, e.clientY, e);
+      }, { passive: false });
+
+      tile.addEventListener('pointerup', (e) => {
+        if (!pointerSessionActive || state.activePointerId !== e.pointerId) return;
+        finishGrab(e.clientX, e.clientY);
+      });
+
+      tile.addEventListener('pointercancel', (e) => {
+        if (!pointerSessionActive || state.activePointerId !== e.pointerId) return;
+        finishGrab(null, null);
+      });
+
+      // Touch Events (explicit non-passive listeners to guarantee preventDefault works everywhere)
+      tile.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        const touch = e.touches[0];
+        touchSessionActive = true;
+        startGrab(touch.clientX, touch.clientY, 'touch', null);
+      }, { passive: true });
+
+      tile.addEventListener('touchmove', (e) => {
+        if (!touchSessionActive || !e.touches || e.touches.length === 0) return;
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        const touch = e.touches[0];
+        moveGrab(touch.clientX, touch.clientY, e);
+      }, { passive: false });
+
+      tile.addEventListener('touchend', (e) => {
+        if (!touchSessionActive) return;
+        const touch = (e.changedTouches && e.changedTouches[0]) || null;
+        finishGrab(touch ? touch.clientX : null, touch ? touch.clientY : null);
+      }, { passive: false });
+
+      tile.addEventListener('touchcancel', () => {
+        if (!touchSessionActive) return;
+        finishGrab(null, null);
+      }, { passive: true });
+    }
+
+    function handleZoneTap(zoneKey) {
+      if (!state.selectedItemId) return;
+      moveItemToZone(state.selectedItemId, zoneKey);
+      state.selectedItemId = null;
+      renderAll();
+    }
+
+    function moveItemToZone(itemId, targetZone) {
+      if (!itemId || !state.placements[targetZone]) return;
+      Object.keys(state.placements).forEach((z) => {
+        state.placements[z] = state.placements[z].filter(id => id !== itemId);
+      });
+      state.placements[targetZone].push(itemId);
+      state.selectedItemId = null;
+      renderAll();
+    }
+
+    function moveBeforeTarget(draggedId, targetId, targetZone) {
+      if (!draggedId || !targetId || !state.placements[targetZone]) return;
+      Object.keys(state.placements).forEach((z) => {
+        state.placements[z] = state.placements[z].filter(id => id !== draggedId);
+      });
+      const list = state.placements[targetZone];
+      const idx = list.indexOf(targetId);
+      if (idx === -1) {
+        list.push(draggedId);
+      } else {
+        list.splice(idx, 0, draggedId);
+      }
+      state.selectedItemId = null;
+      renderAll();
+    }
+
+    function updateHint() {
+      const hint = document.getElementById('selected-hint');
+      if (!hint) return;
+      if (state.selectedItemId) {
+        hint.classList.remove('hidden');
+      } else {
+        hint.classList.add('hidden');
+      }
+    }
+
+    function bindEvents() {
+      // Global document guards while dragging so touch/pointer/HTML5 drag never scrolls or jumps
+      document.addEventListener('touchmove', (e) => {
+        if (state.isAutoScrolling && e.cancelable) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      document.addEventListener('pointermove', (e) => {
+        if (state.isAutoScrolling && state.activeDragSource === 'pointer') {
+          if (e.cancelable) {
+            e.preventDefault();
+          }
+          updatePointerPosition(e.clientY);
+        }
+      }, { passive: false });
+
+      document.addEventListener('dragover', (e) => {
+        if (state.draggedItemId) {
+          if (!state.isAutoScrolling) {
+            lockBrowserScrollDuringDrag(e.clientY, 'html5');
+          } else {
+            updatePointerPosition(e.clientY);
+          }
+        }
+      });
+
+      document.addEventListener('drop', () => {
+        state.draggedItemId = null;
+        unlockBrowserScrollAfterDrag();
+      });
+
+      document.addEventListener('pointerup', (e) => {
+        if (state.isAutoScrolling && state.activeDragSource === 'pointer' && state.activePointerId === e.pointerId) {
+          const draggedId = state.draggedItemId;
+          state.draggedItemId = null;
+          unlockBrowserScrollAfterDrag();
+          if (draggedId) {
+            commitDropAtPoint(draggedId, e.clientX, e.clientY);
+          }
+        }
+      });
+
+      window.addEventListener('blur', () => {
+        state.draggedItemId = null;
+        unlockBrowserScrollAfterDrag();
+      });
+
+      const poolEl = document.getElementById('image-pool');
+      if (poolEl) {
+        poolEl.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          poolEl.classList.add('drag-over');
+          updatePointerPosition(e.clientY);
+        });
+        poolEl.addEventListener('dragleave', (e) => {
+          if (!poolEl.contains(e.relatedTarget)) {
+            poolEl.classList.remove('drag-over');
+          }
+        });
+        poolEl.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const itemId = e.dataTransfer.getData('text/plain') || state.draggedItemId;
+          state.draggedItemId = null;
+          unlockBrowserScrollAfterDrag();
+          if (itemId) {
+            moveItemToZone(itemId, 'pool');
+          }
+        });
+        poolEl.addEventListener('click', () => handleZoneTap('pool'));
+      }
+
+      document.addEventListener('click', () => {
+        if (state.selectedItemId) {
+          state.selectedItemId = null;
+          updateHint();
+          document.querySelectorAll('.selected-tile').forEach(el => el.classList.remove('selected-tile'));
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
